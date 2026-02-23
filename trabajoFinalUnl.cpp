@@ -3,6 +3,152 @@
 #include <ctime>
 using namespace std;
 
+class Enemigo
+{
+protected:
+	int dx;
+	int dy;
+	int velocidad;
+	clock_t paso;
+	clock_t tempo;
+public:
+	Enemigo();
+	Enemigo(int dx, int dy);
+	virtual void dibujar();
+	virtual void borrar();
+	virtual void movimiento();
+	
+};
+Enemigo::Enemigo()
+{
+	
+}
+Enemigo::Enemigo(int dx, int dy)
+{
+	this->dx=dx;
+	this->dy = dy;
+	velocidad = 2;
+	paso = CLOCKS_PER_SEC * velocidad;
+	tempo = clock();
+}
+void Enemigo::dibujar()
+{
+	gotoxy(dx,dy);
+	cout<<"A";
+}
+void Enemigo::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+
+void Enemigo::movimiento()
+{
+	
+}
+
+class Enemigo1 : public Enemigo
+{
+private:
+	
+public:
+	Enemigo1(int dx, int dy);
+	Enemigo1();
+	void dibujar() override;
+	void borrar() override;
+	void movimiento() override;
+	
+};
+Enemigo1::Enemigo1(int dx, int dy) : Enemigo(dx,dy)
+{
+	
+}
+Enemigo1::Enemigo1():Enemigo(0,0){}
+void Enemigo1::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo1::dibujar()
+{
+gotoxy(dx,dy);
+cout<<"H";
+}
+void Enemigo1::movimiento()
+{
+	if(paso+tempo<clock())
+	{
+		borrar();
+		dx+=1;
+		tempo = clock();
+	}
+}
+
+
+class Enemigo2 : public Enemigo
+{
+private:
+public:
+	Enemigo2(int dx,int dy);
+	Enemigo2();
+	void dibujar()override;
+	void borrar() override;
+	void movimiento() override;
+};
+Enemigo2 ::Enemigo2(int dx, int dy): Enemigo(dx,dy){}
+Enemigo2::Enemigo2():Enemigo(0,0){}
+void Enemigo2::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo2::movimiento()
+{
+	if(tempo+paso<clock())
+	{
+		borrar();
+		dx+=1;
+		tempo = clock();
+	}
+}
+void Enemigo2::dibujar()
+{
+	gotoxy(dx,dy);
+	cout<<"M";
+}
+class Enemigo3 : public Enemigo
+{
+private:
+public:
+	Enemigo3(int dx, int dy);
+	Enemigo3();
+	void dibujar()override;
+	void borrar() override;
+	void movimiento() override;
+};
+Enemigo3 ::Enemigo3(int dx, int dy): Enemigo(dx,dy){}
+Enemigo3::Enemigo3():Enemigo(0,0){}
+void Enemigo3::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo3::movimiento()
+{
+	if(tempo+paso<clock())
+	{
+		borrar();
+		dx+=1;
+		tempo = clock();
+	}
+}
+void Enemigo3::dibujar()
+{
+	
+	gotoxy(dx,dy);
+	cout<<"T";
+}
+
 class Disparo
 {
 private:	
@@ -132,10 +278,16 @@ private:
 	int bordeX2;
 	int bordeY;
 	int bordeY2;
+	int dx;
+	Enemigo1 enemigo1[5];
+	Enemigo2 enemigo2[5];
+	Enemigo3 enemigo3[5];
 public:
 	Juego();
 	void leerTeclasYdibujar();
 	void dibujarBordes();
+	void dibujarEnemigos();
+	void movimientoEnemigos();
 	void gameLoop();
 };
 
@@ -145,6 +297,15 @@ Juego::Juego()
 	bordeX2 = 1;
 	bordeY = 1;
 	bordeY2 = 1;
+	dx = 10;
+	for(int x = 0; x<5; x++)
+	{
+		
+		enemigo1[x]=Enemigo1{dx,5};
+		enemigo2[x]=Enemigo2{dx,10};
+		enemigo3[x]=Enemigo3{dx,15};
+		dx +=10;
+	}
 }
 void Juego::leerTeclasYdibujar()
 {
@@ -195,11 +356,26 @@ void Juego::dibujarBordes()
 		bordeY2++;
 	}
 }
+void Juego::dibujarEnemigos()
+{
+for(int x = 0;x<5;x++)
+{
+	enemigo1[x].dibujar();
+	enemigo1[x].movimiento();
+	enemigo2[x].dibujar();
+	enemigo2[x].movimiento();
+	enemigo3[x].dibujar();
+	enemigo3[x].movimiento();
+}	
+}
+
 void Juego::gameLoop()
 {
 	leerTeclasYdibujar();
+	
 	nave1.actualizarDisparo();
 	dibujarBordes();
+	dibujarEnemigos();
 	
 }
 int main(int argc, char *argv[]) {
