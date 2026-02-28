@@ -23,6 +23,7 @@ public:
 	int getX();
 	int getY();
 	void desactivo();
+	bool estaActivo();
 	
 };
 Disparo::Disparo()
@@ -35,6 +36,10 @@ Disparo::Disparo()
 	
 	activo = false;
 	
+}
+bool Disparo::estaActivo()
+{
+	return activo;
 }
 void Disparo::incioDisparo(int dx, int dy)
 {
@@ -217,7 +222,7 @@ public:
 };
 Enemigo1::Enemigo1(int dx, int dy) : Enemigo(dx,dy)
 {
-	vida = 5;
+	vida = 3;
 }
 Enemigo1::Enemigo1():Enemigo(0,0){}
 void Enemigo1::borrar()
@@ -265,7 +270,7 @@ public:
 };
 Enemigo2 ::Enemigo2(int dx, int dy): Enemigo(dx,dy)
 {
-	vida = 3;
+	vida = 2;
 }
 Enemigo2::Enemigo2():Enemigo(0,0){}
 void Enemigo2::borrar()
@@ -311,7 +316,7 @@ public:
 };
 Enemigo3 ::Enemigo3(int dx, int dy): Enemigo(dx,dy)
 {
-	vida = 2;
+	vida = 1;
 }
 Enemigo3::Enemigo3():Enemigo(0,0){}
 void Enemigo3::borrar()
@@ -353,6 +358,10 @@ private:
 	int dx;
 	int dy;
 	int vida;
+	bool parpadeando;
+	clock_t inicioParpadeo;
+	int duracionParpadeo;
+	int intervalo;
 	
 public:
 	Nave();
@@ -369,7 +378,8 @@ public:
 	
 	void perderVidas();
 	
-	bool gameOver();
+	
+	void actualizarParpadeo();
 	
 };
 Nave::Nave()
@@ -377,7 +387,9 @@ Nave::Nave()
 	dx = 20;
 	dy = 28;
 	vida = 3;
-	
+	parpadeando = false;
+	duracionParpadeo = 500;
+	intervalo = 100;
 }
 void Nave::dibujar()
 {
@@ -428,6 +440,32 @@ int Nave::getVida()
 void Nave::perderVidas()
 {
 vida --;	
+parpadeando = true;
+inicioParpadeo = clock();
+}
+void Nave::actualizarParpadeo()
+{
+	
+	{
+		if (!parpadeando) {return;}
+		
+		clock_t ahora = clock();
+		int tiempoPasado = (ahora - inicioParpadeo) * 1000 / CLOCKS_PER_SEC; 
+		
+		if (tiempoPasado >= duracionParpadeo)
+		{
+			
+			dibujar();
+			parpadeando = false;
+			return;
+		}
+		
+		
+		if ((tiempoPasado / intervalo) % 2 == 0){
+			dibujar();}
+		else{
+			borrar();}
+	}
 }
 class Juego
 {
@@ -443,6 +481,9 @@ private:
 	Enemigo1 enemigo1[5];
 	Enemigo2 enemigo2[5];
 	Enemigo3 enemigo3[5];
+	int ganasteOperdiste;
+	int menuPrincipal;
+	
 public:
 	Juego();
 	void leerTeclasYdibujar();
@@ -455,6 +496,10 @@ public:
 	void sumarPuntos();
 	int getPuntosJugador();
 	void gameLoop();
+	void condicionDeVictoria();
+	void interfazInicio();
+	
+
 };
 
 Juego::Juego()
@@ -466,6 +511,8 @@ Juego::Juego()
 	dx = 10;
 	a = true;
 	puntosJugador=0;
+	ganasteOperdiste = 0;
+	menuPrincipal = 1;
 	for(int x = 0; x<5; x++)
 	{
 		
@@ -474,6 +521,20 @@ Juego::Juego()
 		enemigo3[x]=Enemigo3{dx,15};
 		dx +=10;
 	}
+}
+void Juego::interfazInicio()
+{
+	gotoxy(10,5);
+	cout<<"Trabajo de introduccion a la programacion 2025";
+	gotoxy(10,7);
+	cout<<"SPACE INVADERS LITE"<<endl;
+	gotoxy(10,10);
+	cout<<"Intrucciones:"<<endl;
+	cout<<"mover la nave 'a' para la izquierda y 'd' para la derecha"<<endl;
+	cout<<"Disparar con space"<<endl;
+	cout<<"Evitar los disparos enemigos"<<endl;
+	cout<<"Sobrevive y elimina a todos los objetivos"<<endl;
+	cout<<"Presione cualquier tecla para comenzar"<<endl;
 }
 int Juego::getPuntosJugador()
 {
@@ -488,16 +549,16 @@ void Juego::leerTeclasYdibujar()
 	if(kbhit())
 	{
 		nave1.borrar();
-		char tecla = getch();
+		int tecla = getch();
 		switch(tecla)
 		{
-		case 'a':
+		case 97:
 			nave1.moverIzquierda();
 			break;
-		case 'd':
+		case 100:
 			nave1.moverDerecha();
 			break;
-		case 'b':
+		case 32:
 			nave1.disparar();
 			break;
 		}
@@ -506,28 +567,48 @@ void Juego::leerTeclasYdibujar()
 }
 void Juego::colisionEnemigos()
 {
-	for(int x = 0;x<5;x++)
+	if(!nave1.disparo.estaActivo())
+		return;
+	
+	for(int x = 0; x < 5; x++)
 	{
-		if((nave1.disparo.getX()==enemigo1[x].getDX())&&(nave1.disparo.getY()==enemigo1[x].getDY())&&enemigo1[x].enemigoVivo())
+		if(nave1.disparo.getX()==enemigo1[x].getDX() && nave1.disparo.getY()==enemigo1[x].getDY() &&enemigo1[x].enemigoVivo())
 		{
 			enemigo1[x].restandoVidas();
-			sumarPuntos();
+			gotoxy(nave1.disparo.getX(), nave1.disparo.getY());
+			cout << " ";
 			nave1.disparo.desactivo();
 			
+			if(!enemigo1[x].enemigoVivo())
+				sumarPuntos();
+			return;
 		}
-		if((nave1.disparo.getX()==enemigo2[x].getDX())&&(nave1.disparo.getY()==enemigo2[x].getDY())&&enemigo2[x].enemigoVivo())
-		{
-			enemigo2[x].restandoVidas();
-			sumarPuntos();
-			nave1.disparo.desactivo();
-		}
-		if((nave1.disparo.getX()==enemigo3[x].getDX())&&(nave1.disparo.getY()==enemigo3[x].getDY())&&enemigo3[x].enemigoVivo())
-		{
-			enemigo3[x].restandoVidas();
-              sumarPuntos();			
-			nave1.disparo.desactivo();
-		}
-		
+		   
+		   if(nave1.disparo.getX()==enemigo2[x].getDX() &&nave1.disparo.getY()==enemigo2[x].getDY() && enemigo2[x].enemigoVivo())
+		   {
+			   enemigo2[x].restandoVidas();
+			   gotoxy(nave1.disparo.getX(), nave1.disparo.getY());
+			   cout << " ";
+			   nave1.disparo.desactivo();
+			   
+			   if(!enemigo2[x].enemigoVivo())
+				   sumarPuntos();
+			   
+			   return;
+		   }
+			  
+			  if(nave1.disparo.getX()==enemigo3[x].getDX() && nave1.disparo.getY()==enemigo3[x].getDY() && enemigo3[x].enemigoVivo())
+			  {
+				  enemigo3[x].restandoVidas();
+				  gotoxy(nave1.disparo.getX(), nave1.disparo.getY());
+				  cout << " ";
+				  nave1.disparo.desactivo();
+				  
+				  if(!enemigo3[x].enemigoVivo())
+					  sumarPuntos();
+				  
+				  return;
+			  }
 	}
 }
 void Juego::dibujarBordes()
@@ -625,17 +706,17 @@ void Juego::disparosEnemigos()
 	for(int x = 0; x<5;x++)
 	{
 		
-		if(rand() % 100 < 4)  {
+		if(enemigo1[x].enemigoVivo() && rand() % 100 < 4)  {
 			enemigo1[x].disparar(enemigo1[x].getDX(), enemigo1[x].getDY());
 			
 		}
 		
-		if(rand() % 100 < 4){
+		if(enemigo2[x].enemigoVivo() && rand() % 100 < 4){
 			enemigo2[x].disparar(enemigo2[x].getDX(), enemigo2[x].getDY());
 			
 		}
 		
-		if(rand() % 100 < 4){
+		if(enemigo3[x].enemigoVivo()&&rand() % 100 < 4){
 			enemigo3[x].disparar(enemigo3[x].getDX(), enemigo3[x].getDY());
 		}
 		if(enemigo1[x].disparos.getX()==nave1.getDX()&&enemigo1[x].disparos.getY()==nave1.getDY())
@@ -673,16 +754,84 @@ void Juego::dibujarInterfaces()
 	cout<<getPuntosJugador();
 		
 }
+void Juego::condicionDeVictoria()
+{
+	if(getPuntosJugador()>=225)
+	{
+		ganasteOperdiste = 1;
+	}
+	for(int x = 0;x<5;x++)
+	{if(((enemigo1[x].getDY()>=30))||((enemigo2[x].getDY()>=30))||(enemigo3[x].getDY()>=30))
+	{
+		ganasteOperdiste = 2;
+	}
+	}
+	if(nave1.getVida()==0)
+	{
+		ganasteOperdiste = 2;
+	}
+}
 void Juego::gameLoop()
 {
+	if(menuPrincipal==1)
+	{
+		interfazInicio();
+		if(kbhit())
+		{
+			for(int y = 1; y <= 30; y++)
+			{
+				for(int x = 1; x <= 75; x++)
+				{
+					gotoxy(x,y);
+					cout << " ";
+				}
+			}
+			menuPrincipal =2;
+		}
+	}
+	else if(menuPrincipal==2){
 	leerTeclasYdibujar();
-	colisionEnemigos();
+	movimientoEnemigos();
 	nave1.actualizarDisparo();
+	colisionEnemigos();
+	nave1.actualizarParpadeo();
+	condicionDeVictoria();
 	dibujarBordes();
 	disparosEnemigos();
-	movimientoEnemigos();
+	
 	dibujarEnemigos();
 	dibujarInterfaces();
+	}
+	if(ganasteOperdiste==1)
+	{
+		for(int y = 1; y <= 30; y++)
+		{
+			for(int x = 1; x <= 75; x++)
+			{
+				gotoxy(x,y);
+				cout << " ";
+			}
+		}
+
+		gotoxy(20,20);
+		cout <<"GANASTE";
+		menuPrincipal= 3;
+		
+	}if(ganasteOperdiste==2)
+	{
+		for(int y = 1; y <= 30; y++)
+		{
+			for(int x = 1; x <= 75; x++)
+			{
+				gotoxy(x,y);
+				cout << " ";
+			}
+		}
+		gotoxy(20,20);
+		cout<<"PERDISTE";
+		menuPrincipal= 3;
+		
+	}
 	
 	
 }
