@@ -1,153 +1,8 @@
 #include <iostream>
 #include <conio2.h>
 #include <ctime>
+#include <cstdlib>
 using namespace std;
-
-class Enemigo
-{
-protected:
-	int dx;
-	int dy;
-	int velocidad;
-	clock_t paso;
-	clock_t tempo;
-public:
-	Enemigo();
-	Enemigo(int dx, int dy);
-	virtual void dibujar();
-	virtual void borrar();
-	virtual void movimiento();
-	
-};
-Enemigo::Enemigo()
-{
-	
-}
-Enemigo::Enemigo(int dx, int dy)
-{
-	this->dx=dx;
-	this->dy = dy;
-	velocidad = 2;
-	paso = CLOCKS_PER_SEC * velocidad;
-	tempo = clock();
-}
-void Enemigo::dibujar()
-{
-	gotoxy(dx,dy);
-	cout<<"A";
-}
-void Enemigo::borrar()
-{
-	gotoxy(dx,dy);
-	cout<<" ";
-}
-
-void Enemigo::movimiento()
-{
-	
-}
-
-class Enemigo1 : public Enemigo
-{
-private:
-	
-public:
-	Enemigo1(int dx, int dy);
-	Enemigo1();
-	void dibujar() override;
-	void borrar() override;
-	void movimiento() override;
-	
-};
-Enemigo1::Enemigo1(int dx, int dy) : Enemigo(dx,dy)
-{
-	
-}
-Enemigo1::Enemigo1():Enemigo(0,0){}
-void Enemigo1::borrar()
-{
-	gotoxy(dx,dy);
-	cout<<" ";
-}
-void Enemigo1::dibujar()
-{
-gotoxy(dx,dy);
-cout<<"H";
-}
-void Enemigo1::movimiento()
-{
-	if(paso+tempo<clock())
-	{
-		borrar();
-		dx+=1;
-		tempo = clock();
-	}
-}
-
-
-class Enemigo2 : public Enemigo
-{
-private:
-public:
-	Enemigo2(int dx,int dy);
-	Enemigo2();
-	void dibujar()override;
-	void borrar() override;
-	void movimiento() override;
-};
-Enemigo2 ::Enemigo2(int dx, int dy): Enemigo(dx,dy){}
-Enemigo2::Enemigo2():Enemigo(0,0){}
-void Enemigo2::borrar()
-{
-	gotoxy(dx,dy);
-	cout<<" ";
-}
-void Enemigo2::movimiento()
-{
-	if(tempo+paso<clock())
-	{
-		borrar();
-		dx+=1;
-		tempo = clock();
-	}
-}
-void Enemigo2::dibujar()
-{
-	gotoxy(dx,dy);
-	cout<<"M";
-}
-class Enemigo3 : public Enemigo
-{
-private:
-public:
-	Enemigo3(int dx, int dy);
-	Enemigo3();
-	void dibujar()override;
-	void borrar() override;
-	void movimiento() override;
-};
-Enemigo3 ::Enemigo3(int dx, int dy): Enemigo(dx,dy){}
-Enemigo3::Enemigo3():Enemigo(0,0){}
-void Enemigo3::borrar()
-{
-	gotoxy(dx,dy);
-	cout<<" ";
-}
-void Enemigo3::movimiento()
-{
-	if(tempo+paso<clock())
-	{
-		borrar();
-		dx+=1;
-		tempo = clock();
-	}
-}
-void Enemigo3::dibujar()
-{
-	
-	gotoxy(dx,dy);
-	cout<<"T";
-}
 
 class Disparo
 {
@@ -164,6 +19,7 @@ public:
 	void incioDisparo(int dx, int dy);
 	bool actualizar();
 	void dibujar();
+	bool actualizarDisparoNave();
 	
 };
 Disparo::Disparo()
@@ -210,11 +66,248 @@ if(y<=2)
 
 return activo;
 }
+bool Disparo::actualizarDisparoNave()
+{   if(!activo)
+{
+	return false;
+}
+if(tempo + paso < clock()){
+	gotoxy(x,y);
+	cout<<" ";
+	y++;
+	gotoxy(x,y);
+	cout<<"I";
+	tempo = clock();
+}
+if(y>=29)
+{
+	gotoxy(x,y);
+	cout<<" ";
+	activo = false;
+}
+
+
+return activo;
+}
 void Disparo::dibujar()
 {
 	gotoxy(x,y);
 	cout<<"I";
 }
+
+class Enemigo
+{
+protected:
+	int dx;
+	int dy;
+	int velocidad;
+	clock_t paso;
+	clock_t tempo;
+	Disparo disparos;
+public:
+	Enemigo();
+	Enemigo(int dx, int dy);
+	virtual void dibujar();
+	virtual void borrar();
+	virtual void movimiento();
+	virtual void movimientoDerecha();
+	int getDX();
+	int getDY();
+	void setDY();
+	void disparar(int dx, int dy);
+	void actualizarDisparo();
+	void dibujarDisparos();
+	
+};
+Enemigo::Enemigo()
+{
+	
+}
+Enemigo::Enemigo(int dx, int dy)
+{
+	this->dx=dx;
+	this->dy = dy;
+	velocidad = 2;
+	paso = CLOCKS_PER_SEC * velocidad;
+	tempo = clock();
+}
+void Enemigo::dibujar()
+{
+	gotoxy(dx,dy);
+	cout<<"A";
+}
+void Enemigo::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+
+void Enemigo::movimiento()
+{
+	
+}
+void Enemigo::movimientoDerecha()
+{
+	
+}
+int Enemigo::getDX()
+{
+	return dx;
+}
+int Enemigo::getDY()
+{
+	return dy;
+}
+void Enemigo::setDY()
+{
+	
+	dy+=1;
+	dx+=1;
+}
+
+void Enemigo::disparar(int dx, int dy)
+{
+	disparos.incioDisparo(dx,dy);
+}
+void Enemigo::actualizarDisparo()
+{
+	disparos.actualizarDisparoNave();
+}
+class Enemigo1 : public Enemigo
+{
+private:
+	
+public:
+	Enemigo1(int dx, int dy);
+	Enemigo1();
+	void dibujar() override;
+	void borrar() override;
+	void movimiento() override;
+	void movimientoDerecha()override;
+};
+Enemigo1::Enemigo1(int dx, int dy) : Enemigo(dx,dy)
+{
+	
+}
+Enemigo1::Enemigo1():Enemigo(0,0){}
+void Enemigo1::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo1::dibujar()
+{
+	borrar	();
+	gotoxy(dx,dy);
+	cout<<"H";
+}
+void Enemigo1::movimiento()
+{
+	if(paso+tempo<clock())
+	{
+		borrar();
+		dx+=2;
+		tempo = clock();
+	}
+}
+void Enemigo1::movimientoDerecha()
+{
+	if(paso+tempo<clock())
+	{
+		borrar();
+		dx-=2;
+		tempo = clock();
+	}
+	
+}
+
+class Enemigo2 : public Enemigo
+{
+private:
+public:
+	Enemigo2(int dx,int dy);
+	Enemigo2();
+	void dibujar()override;
+	void borrar() override;
+	void movimiento() override;
+	void movimientoDerecha() override;
+};
+Enemigo2 ::Enemigo2(int dx, int dy): Enemigo(dx,dy){}
+Enemigo2::Enemigo2():Enemigo(0,0){}
+void Enemigo2::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo2::movimiento()
+{
+	if(tempo+paso<clock())
+	{
+		borrar();
+		dx+=2;
+		tempo = clock();
+	}
+}
+void Enemigo2::dibujar()
+{
+	gotoxy(dx,dy);
+	cout<<"M";
+}
+void Enemigo2::movimientoDerecha()
+{
+	if(paso+tempo<clock())
+	{
+		borrar();
+		dx-=2;
+		tempo = clock();
+	}
+	
+}
+class Enemigo3 : public Enemigo
+{
+private:
+public:
+	Enemigo3(int dx, int dy);
+	Enemigo3();
+	void dibujar()override;
+	void borrar() override;
+	void movimiento() override;
+	void movimientoDerecha() override;
+};
+Enemigo3 ::Enemigo3(int dx, int dy): Enemigo(dx,dy){}
+Enemigo3::Enemigo3():Enemigo(0,0){}
+void Enemigo3::borrar()
+{
+	gotoxy(dx,dy);
+	cout<<" ";
+}
+void Enemigo3::movimiento()
+{
+	if(tempo+paso<clock())
+	{
+		borrar();
+		dx+=2;
+		tempo = clock();
+	}
+}
+void Enemigo3::dibujar()
+{
+	
+	gotoxy(dx,dy);
+	cout<<"T";
+}
+void Enemigo3::movimientoDerecha()
+{
+	if(paso+tempo<clock())
+	{
+		borrar();
+		dx-=2;
+		tempo = clock();
+	}
+	
+}
+
+
 
 class Nave
 {
@@ -234,13 +327,13 @@ public:
 };
 Nave::Nave()
 {
-   dx = 20;
-   dy = 20;
+	dx = 20;
+	dy = 20;
 }
 void Nave::dibujar()
 {
-   gotoxy(dx,dy);
-   cout<<"A";
+	gotoxy(dx,dy);
+	cout<<"A";
 }
 void Nave::borrar()
 {
@@ -279,6 +372,7 @@ private:
 	int bordeY;
 	int bordeY2;
 	int dx;
+	bool a;
 	Enemigo1 enemigo1[5];
 	Enemigo2 enemigo2[5];
 	Enemigo3 enemigo3[5];
@@ -288,6 +382,7 @@ public:
 	void dibujarBordes();
 	void dibujarEnemigos();
 	void movimientoEnemigos();
+	void disparosEnemigos();
 	void gameLoop();
 };
 
@@ -298,6 +393,7 @@ Juego::Juego()
 	bordeY = 1;
 	bordeY2 = 1;
 	dx = 10;
+	a = true;
 	for(int x = 0; x<5; x++)
 	{
 		
@@ -309,7 +405,7 @@ Juego::Juego()
 }
 void Juego::leerTeclasYdibujar()
 {
-    if(kbhit())
+	if(kbhit())
 	{
 		nave1.borrar();
 		char tecla = getch();
@@ -358,23 +454,96 @@ void Juego::dibujarBordes()
 }
 void Juego::dibujarEnemigos()
 {
-for(int x = 0;x<5;x++)
-{
-	enemigo1[x].dibujar();
-	enemigo1[x].movimiento();
-	enemigo2[x].dibujar();
-	enemigo2[x].movimiento();
-	enemigo3[x].dibujar();
-	enemigo3[x].movimiento();
-}	
+	
+	for(int x = 0;x<5;x++)
+	{
+		
+		enemigo1[x].dibujar();
+		//enemigo1[x].movimiento();
+		enemigo2[x].dibujar();
+		//enemigo2[x].movimiento();
+		enemigo3[x].dibujar();
+		//enemigo3[x].movimiento();
+	}	
 }
-
+void Juego::movimientoEnemigos()
+{
+	
+	for(int x = 0;x<5;x++)
+	{
+		if(a){
+			enemigo1[x].movimiento();
+			enemigo2[x].movimiento();
+			enemigo3[x].movimiento();
+			if(enemigo1[4].getDX()>=72)
+			{
+				a = false;
+				for(int x = 0;x<5;x++)
+				{
+					enemigo1[x].setDY();
+					enemigo2[x].setDY();
+					enemigo3[x].setDY();
+				}
+			}
+		}
+		
+		
+	}
+	if(a==false)
+	{
+		for(int x= 0;x<5;x++)
+		{
+			enemigo1[x].movimientoDerecha();
+			enemigo2[x].movimientoDerecha();
+			enemigo3[x].movimientoDerecha();
+			if(enemigo1[0].getDX()<=3)
+			{
+				a = true;
+				for(int x=0;x<5;x++)
+				{
+					enemigo1[x].borrar();
+					enemigo1[x].setDY();
+					enemigo2[x].borrar();
+					enemigo2[x].setDY();
+					enemigo3[x].borrar();
+					enemigo3[x].setDY();
+				}
+			}
+		}
+	}
+	
+}
+void Juego::disparosEnemigos()
+{
+	srand(time(NULL));
+	for(int x = 0; x<5;x++)
+	{
+		
+		if(rand() % 100 < 4)  {
+			enemigo1[x].disparar(enemigo1[x].getDX(), enemigo1[x].getDY());
+		}
+		
+		if(rand() % 100 < 4){
+			enemigo2[x].disparar(enemigo2[x].getDX(), enemigo2[x].getDY());
+		}
+		
+		if(rand() % 100 < 4){
+			enemigo3[x].disparar(enemigo3[x].getDX(), enemigo3[x].getDY());
+		}
+		
+		enemigo1[x].actualizarDisparo();
+		enemigo2[x].actualizarDisparo();
+		enemigo3[x].actualizarDisparo();
+	}
+}
 void Juego::gameLoop()
 {
 	leerTeclasYdibujar();
 	
 	nave1.actualizarDisparo();
 	dibujarBordes();
+	disparosEnemigos();
+	movimientoEnemigos();
 	dibujarEnemigos();
 	
 }
@@ -382,8 +551,7 @@ int main(int argc, char *argv[]) {
 	Juego juego1;
 	
 	while(true){
-	juego1.gameLoop();
+		juego1.gameLoop();
 	}
 	return 0;
 }
-
