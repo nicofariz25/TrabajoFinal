@@ -526,7 +526,7 @@ void Juego::interfazInicio()
 {
 	gotoxy(5,2);
 	cout<<"FARIZ NICOLAS"<<endl;
-	cout<<"DNI 40115995";
+	cout<<"DNI 40115996";
 	gotoxy(10,5);
 	cout<<"Trabajo de introduccion a la programacion 2025";
 	gotoxy(10,7);
